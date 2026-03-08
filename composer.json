@@ -1,7 +1,7 @@
 {
     "name": "pinarkive/pinarkive-sdk-php",
-    "version": "2.3.0",
-    "description": "PHP SDK for Pinarkive API v2.3.0 - Easy IPFS file management with directory DAG uploads, file renaming, and enhanced API key management. Perfect for Laravel, Symfony, and plain PHP projects.",
+    "version": "3.0.0",
+    "description": "PHP SDK for PinArkive API v3 – minimal client (upload, pin, remove, users/me, uploads, tokens, status, allocations). See https://pinarkive.com/docs.php",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Pinarkive\\": "src/"
+            "Pinarkive\\": "./"
         }
     },
     "autoload-dev": {
@@ -32,7 +32,7 @@
         "api",
         "sdk",
         "php",
-        "v2.x",
+        "v3",
         "directory-dag",
         "pinning",
         "api-keys",
