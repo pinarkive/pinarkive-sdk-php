@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /** SDK version (API v3). */
-const VERSION = '3.0.0';
+const VERSION = '3.1.0';
 
 /**
  * Thrown when the API returns HTTP 4xx or 5xx.
@@ -21,10 +21,14 @@ class PinarkiveException extends \Exception
     /** @var array */
     private $body;
 
-    public function __construct(int $statusCode, string $message, array $body = [])
+    /** @var int|null From Retry-After header (429). */
+    private $retryAfterHeader;
+
+    public function __construct(int $statusCode, string $message, array $body = [], ?int $retryAfterHeader = null)
     {
         $this->statusCode = $statusCode;
         $this->body = $body;
+        $this->retryAfterHeader = $retryAfterHeader;
         parent::__construct($message, $statusCode);
     }
 
@@ -52,6 +56,21 @@ class PinarkiveException extends \Exception
     {
         return $this->body['code'] ?? '';
     }
+
+    /** For 403 missing_scope: the required scope. */
+    public function getRequired(): string
+    {
+        return $this->body['required'] ?? '';
+    }
+
+    /** For 429: seconds until retry (from body retryAfter or Retry-After header). */
+    public function getRetryAfter(): ?int
+    {
+        if (isset($this->body['retryAfter'])) {
+            return (int) $this->body['retryAfter'];
+        }
+        return $this->retryAfterHeader;
+    }
 }
 
 /**
@@ -73,16 +92,21 @@ class PinarkiveClient
     /** @var string */
     private $baseUrl;
 
+    /** @var bool When true, send X-Request-Source: web on Bearer requests (for backend to classify as WEB in logs) */
+    private $sendRequestSourceWeb;
+
     /**
      * @param string|null $token Bearer token (JWT)
      * @param string|null $apiKey API key (sent as X-API-Key header)
      * @param string $baseUrl Base URL (default https://api.pinarkive.com/api/v3)
+     * @param bool $sendRequestSourceWeb If true, sends X-Request-Source: web on Bearer-authenticated requests only (not when using API Key)
      */
-    public function __construct($token = null, $apiKey = null, $baseUrl = 'https://api.pinarkive.com/api/v3')
+    public function __construct($token = null, $apiKey = null, $baseUrl = 'https://api.pinarkive.com/api/v3', $sendRequestSourceWeb = false)
     {
         $this->token = $token;
         $this->apiKey = $apiKey;
         $this->baseUrl = rtrim($baseUrl, '/');
+        $this->sendRequestSourceWeb = $sendRequestSourceWeb;
         $this->client = new Client();
     }
 
@@ -94,6 +118,9 @@ class PinarkiveClient
                 $h['X-API-Key'] = $this->apiKey;
             } elseif ($this->token !== null && $this->token !== '') {
                 $h['Authorization'] = 'Bearer ' . $this->token;
+                if ($this->sendRequestSourceWeb) {
+                    $h['X-Request-Source'] = 'web';
+                }
             }
         }
         return $h;
@@ -124,7 +151,9 @@ class PinarkiveClient
                     }
                 }
                 $msg = $body['message'] ?? $body['error'] ?? $r->getReasonPhrase();
-                throw new PinarkiveException($code, $msg, $body);
+                $h = $r->getHeaderLine('Retry-After');
+                $retryAfter = ($code === 429 && $h !== '') ? (int) $h : null;
+                throw new PinarkiveException($code, $msg, $body, $retryAfter);
             }
             throw $e;
         }
@@ -138,7 +167,10 @@ class PinarkiveClient
                 }
             }
             $msg = $body['message'] ?? $body['error'] ?? $response->getReasonPhrase();
-            throw new PinarkiveException($response->getStatusCode(), $msg, $body);
+            $statusCode = $response->getStatusCode();
+            $h = $response->getHeaderLine('Retry-After');
+            $retryAfter = ($statusCode === 429 && $h !== '') ? (int) $h : null;
+            throw new PinarkiveException($statusCode, $msg, $body, $retryAfter);
         }
         return $response;
     }
@@ -163,12 +195,21 @@ class PinarkiveClient
         return $this->request('GET', '/peers/', [], false);
     }
 
-    /** POST /auth/login – returns JSON with token, user? */
+    /** POST /auth/login – returns JSON with token, user? or requires2FA + temporaryToken. If requires2FA, call verify2FALogin(). */
     public function login(string $email, string $password): \Psr\Http\Message\ResponseInterface
     {
         return $this->request('POST', '/auth/login', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => ['email' => $email, 'password' => $password],
+        ], false);
+    }
+
+    /** POST /auth/2fa/verify-login – complete login after 2FA. Returns JSON with token. */
+    public function verify2FALogin(string $temporaryToken, string $code): \Psr\Http\Message\ResponseInterface
+    {
+        return $this->request('POST', '/auth/2fa/verify-login', [
+            'headers' => ['Content-Type' => 'application/json'],
+            'json' => ['temporaryToken' => $temporaryToken, 'code' => $code],
         ], false);
     }
 
@@ -266,15 +307,26 @@ class PinarkiveClient
 
     // --- Tokens (name required; label default cli-access; expiresInDays optional) ---
 
-    /** POST /tokens/generate – name required, optional label (default cli-access), expiresInDays */
-    public function generateToken(string $name, ?string $label = null, ?int $expiresInDays = null): \Psr\Http\Message\ResponseInterface
-    {
+    /** POST /tokens/generate – name required, optional label, expiresInDays, scopes[], totpCode (2FA) */
+    public function generateToken(
+        string $name,
+        ?string $label = null,
+        ?int $expiresInDays = null,
+        ?array $scopes = null,
+        ?string $totpCode = null
+    ): \Psr\Http\Message\ResponseInterface {
         $body = ['name' => $name];
         if ($label !== null) {
             $body['label'] = $label;
         }
         if ($expiresInDays !== null) {
             $body['expiresInDays'] = $expiresInDays;
+        }
+        if ($scopes !== null && $scopes !== []) {
+            $body['scopes'] = $scopes;
+        }
+        if ($totpCode !== null && $totpCode !== '') {
+            $body['totpCode'] = $totpCode;
         }
         return $this->request('POST', '/tokens/generate', ['json' => $body]);
     }
@@ -285,10 +337,11 @@ class PinarkiveClient
         return $this->request('GET', '/tokens/list');
     }
 
-    /** DELETE /tokens/revoke/:name */
-    public function revokeToken(string $name): \Psr\Http\Message\ResponseInterface
+    /** DELETE /tokens/revoke/:name – optional totpCode when account has 2FA */
+    public function revokeToken(string $name, ?string $totpCode = null): \Psr\Http\Message\ResponseInterface
     {
-        return $this->request('DELETE', '/tokens/revoke/' . rawurlencode($name));
+        $options = ($totpCode !== null && $totpCode !== '') ? ['json' => ['totpCode' => $totpCode]] : [];
+        return $this->request('DELETE', '/tokens/revoke/' . rawurlencode($name), $options);
     }
 
     // --- Status ---

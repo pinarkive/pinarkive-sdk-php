@@ -2,7 +2,7 @@
 
 Minimal PHP client for the **PinArkive API v3**. Upload files, pin by CID, manage tokens, and check status. See [pinarkive.com/docs.php](https://pinarkive.com/docs.php).
 
-**Version:** 3.0.0
+**Version:** 3.1.0
 
 ## Installation
 
@@ -39,8 +39,9 @@ print_r($data['uploads']);
 
 ## Authentication
 
-- **Constructor:** `new PinarkiveClient($token = null, $apiKey = null, $baseUrl = 'https://api.pinarkive.com/api/v3')`
+- **Constructor:** `new PinarkiveClient($token = null, $apiKey = null, $baseUrl = '...', $sendRequestSourceWeb = false)`
 - **API Key** is sent as `X-API-Key` header; **token** as `Authorization: Bearer <token>`.
+- **$sendRequestSourceWeb:** when `true`, sends `X-Request-Source: web` on every Bearer-authenticated request (not when using API Key). Use from web apps so the backend classifies requests as **WEB** in logs instead of **JWT**.
 
 ## API Methods (minimal set)
 
@@ -50,6 +51,7 @@ print_r($data['uploads']);
 | `getPlans()` | GET /plans/ |
 | `getPeers()` | GET /peers/ |
 | `login($email, $password)` | POST /auth/login |
+| `verify2FALogin($temporaryToken, $code)` | POST /auth/2fa/verify-login |
 | `uploadFile($filePath, $clusterId = null, $timelock = null)` | POST /files/ |
 | `uploadDirectory($dirPath, $clusterId = null, $timelock = null)` | POST /files/directory |
 | `uploadDirectoryDAG($files, $dirName = null, $clusterId = null, $timelock = null)` | POST /files/directory-dag |
@@ -57,9 +59,9 @@ print_r($data['uploads']);
 | `removeFile($cid)` | DELETE /files/remove/:cid |
 | `getMe()` | GET /users/me |
 | `listUploads($page = 1, $limit = 20)` | GET /users/me/uploads |
-| `generateToken($name, $label = null, $expiresInDays = null)` | POST /tokens/generate |
+| `generateToken($name, $label = null, $expiresInDays = null, $scopes = null, $totpCode = null)` | POST /tokens/generate |
 | `listTokens()` | GET /tokens/list |
-| `revokeToken($name)` | DELETE /tokens/revoke/:name |
+| `revokeToken($name, $totpCode = null)` | DELETE /tokens/revoke/:name |
 | `getStatus($cid, $clusterId = null)` | GET /status/:cid |
 | `getAllocations($cid, $clusterId = null)` | GET /allocations/:cid |
 
@@ -72,7 +74,9 @@ On HTTP 4xx/5xx the client throws **`PinarkiveException`** with:
 - `getStatusCode()` — HTTP status
 - `getApiError()` — API field `error`
 - `getApiMessage()` — API field `message`
-- `getApiCode()` — API field `code` (e.g. `email_not_verified`)
+- `getApiCode()` — API field `code` (e.g. `email_not_verified`, `missing_scope`)
+- `getRequired()` — for 403 `missing_scope`: the required scope
+- `getRetryAfter()` — for 429: seconds until retry (from body or `Retry-After` header)
 - `getBody()` — full response array
 
 ```php
@@ -84,6 +88,12 @@ try {
 ```
 
 ## Changelog
+
+### 3.1.0
+
+- **Request source:** Constructor 4th param `$sendRequestSourceWeb = true` sends `X-Request-Source: web` on Bearer requests.
+- **Scopes & 2FA:** `generateToken(..., $scopes, $totpCode)`; `revokeToken($name, $totpCode)`. `verify2FALogin($temporaryToken, $code)` for login with 2FA.
+- **Errors:** `getRequired()` (403 missing_scope), `getRetryAfter()` (429).
 
 ### 3.0.0
 

@@ -1,6 +1,6 @@
 {
     "name": "pinarkive/pinarkive-sdk-php",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "description": "PHP SDK for PinArkive API v3 – minimal client (upload, pin, remove, users/me, uploads, tokens, status, allocations). See https://pinarkive.com/docs.php",
     "type": "library",
     "license": "MIT",
