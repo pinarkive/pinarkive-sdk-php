@@ -75,7 +75,7 @@ class PinarkiveException extends \Exception
 
 /**
  * PinarkiveClient – PHP SDK for PinArkive API v3.
- * Minimal client per https://pinarkive.com/docs.php (upload, pin, remove, users/me, uploads, tokens, status, allocations).
+ * Minimal client per https://docs.pinarkive.com (upload, pin, remove, users/me, uploads, tokens, status, allocations).
  * Auth: Bearer token or X-API-Key. On 4xx/5xx throws PinarkiveException with status code and API body.
  */
 class PinarkiveClient

@@ -1,8 +1,8 @@
 # Pinarkive PHP SDK
 
-Minimal PHP client for the **PinArkive API v3**. Upload files, pin by CID, manage tokens, and check status. See [pinarkive.com/docs.php](https://pinarkive.com/docs.php).
+Minimal PHP client for the **PinArkive API v3**. Upload files, pin by CID, manage tokens, and check status. See [docs.pinarkive.com](https://docs.pinarkive.com).
 
-**Version:** 3.1.1
+**Version:** 3.1.2
 
 ## Installation
 
@@ -35,6 +35,16 @@ $client = new PinarkiveClient($data['token'], null);
 $response = $client->listUploads(1, 20);
 $data = json_decode($response->getBody(), true);
 print_r($data['uploads']);
+```
+
+### Directory DAG (`uploadDirectoryDAG`)
+
+The API expects multipart field **`files`** (repeated); each part’s **filename** is the path inside the DAG. The response root CID is **`cid`**.
+
+```php
+$response = $client->uploadDirectoryDAG(['1.png', '2.png'], 'mydag', 'cl0-global');
+$data = json_decode($response->getBody(), true);
+echo $data['cid']; // gateway …/ipfs/<cid>/1.png
 ```
 
 ## Authentication
@@ -89,6 +99,10 @@ try {
 
 ## Changelog
 
+### 3.1.2
+
+- **Docs:** Links updated to [https://docs.pinarkive.com](https://docs.pinarkive.com).
+
 ### 3.1.0
 
 - **Request source:** Constructor 4th param `$sendRequestSourceWeb = true` sends `X-Request-Source: web` on Bearer requests.
@@ -105,7 +119,7 @@ See also [CHANGELOG.md](./CHANGELOG.md).
 
 - **API v3:** Base URL is now `https://api.pinarkive.com/api/v3` (was `/api/v2`). v1/v2 are deprecated (410).
 - **Errors:** On 4xx/5xx the client throws `PinarkiveException` with `getStatusCode()`, `getApiError()`, `getApiMessage()`, `getApiCode()`, `getBody()` (no raw Guzzle response on failure).
-- **Minimal surface:** Only endpoints documented at [pinarkive.com/docs.php](https://pinarkive.com/docs.php): health, plans, peers, login, files (upload, directory, directory-dag, pin, remove), users/me, uploads, tokens (generate with `name` / `label` / `expiresInDays`), status, allocations. Optional `$clusterId` and `$timelock` (ISO 8601) on upload/pin.
+- **Minimal surface:** Only endpoints documented at [docs.pinarkive.com](https://docs.pinarkive.com): health, plans, peers, login, files (upload, directory, directory-dag, pin, remove), users/me, uploads, tokens (generate with `name` / `label` / `expiresInDays`), status, allocations. Optional `$clusterId` and `$timelock` (ISO 8601) on upload/pin.
 - **Removed:** `renameFile`; token options `permissions`, `ipAllowlist`. Use API `label` and `expiresInDays` only.
 - **Constructor:** `PinarkiveClient($token = null, $apiKey = null, $baseUrl = '...')` — third argument is base URL (v2 had only apiKey and baseUrl).
 - **Pin:** `pinCid` now accepts `$originalName`, `$customName` (replacing the old single `$filename`).
@@ -121,5 +135,5 @@ See also [CHANGELOG.md](./CHANGELOG.md).
 
 ## Links
 
-- [API docs](https://pinarkive.com/docs.php)
+- [API docs](https://docs.pinarkive.com)
 - [Repository](https://github.com/pinarkive/pinarkive-sdk-php)

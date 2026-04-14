@@ -2,6 +2,12 @@
 
 All notable changes to `pinarkive/pinarkive-sdk-php` are documented here.
 
+## [3.1.2] - 2026-04-14
+
+### Changed
+
+- **Documentation:** Links updated from `https://pinarkive.com/docs.php` to [https://docs.pinarkive.com](https://docs.pinarkive.com).
+
 ## [3.1.1] - 2026-04-14
 
 ### Fixed
