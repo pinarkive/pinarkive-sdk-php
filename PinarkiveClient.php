@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /** SDK version (API v3). */
-const VERSION = '3.1.0';
+const VERSION = '3.1.1';
 
 /**
  * Thrown when the API returns HTTP 4xx or 5xx.
@@ -242,7 +242,7 @@ class PinarkiveClient
     }
 
     /**
-     * POST /files/directory-dag – multipart files[i][path], files[i][content]; optional cl, timelock
+     * POST /files/directory-dag – multipart: repeated field name `files`, filename = path inside DAG; optional cl, timelock
      * @param array $files array of [ 'path' => string, 'content' => string|resource ]
      */
     public function uploadDirectoryDAG(array $files, ?string $dirName = null, ?string $clusterId = null, ?string $timelock = null): \Psr\Http\Message\ResponseInterface
@@ -257,11 +257,21 @@ class PinarkiveClient
         if ($timelock !== null) {
             $multipart[] = ['name' => 'timelock', 'contents' => $timelock];
         }
-        foreach ($files as $i => $file) {
-            $path = is_array($file) ? $file['path'] : $file;
-            $content = is_array($file) ? $file['content'] : file_get_contents($file);
-            $multipart[] = ['name' => "files[{$i}][path]", 'contents' => $path];
-            $multipart[] = ['name' => "files[{$i}][content]", 'contents' => $content];
+        foreach ($files as $file) {
+            $path = is_array($file) ? ($file['path'] ?? '') : (string) $file;
+            $path = str_replace('\\', '/', trim((string) $path));
+            if ($path === '' || substr($path, 0, 1) === '/' || strpos($path, '..') !== false) {
+                throw new \InvalidArgumentException("Invalid DAG path: {$path}");
+            }
+
+            // Content can be a string (bytes) or resource/stream. If caller passed a file path string,
+            // keep previous behaviour: read from that path on disk.
+            $content = is_array($file) ? ($file['content'] ?? '') : file_get_contents($file);
+            $multipart[] = [
+                'name' => 'files',
+                'contents' => $content,
+                'filename' => $path,
+            ];
         }
         return $this->request('POST', '/files/directory-dag', ['multipart' => $multipart]);
     }
