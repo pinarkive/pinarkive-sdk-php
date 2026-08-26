@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /** SDK version (API v3). */
-const VERSION = '3.1.1';
+const VERSION = '3.1.3';
 
 /**
  * Thrown when the API returns HTTP 4xx or 5xx.
