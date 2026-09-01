@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
 /** SDK version (API v3). */
-const VERSION = '3.1.3';
+const VERSION = '3.1.4';
 
 /**
  * Thrown when the API returns HTTP 4xx or 5xx.
@@ -100,14 +100,19 @@ class PinarkiveClient
      * @param string|null $apiKey API key (sent as X-API-Key header)
      * @param string $baseUrl Base URL (default https://api.pinarkive.com/api/v3)
      * @param bool $sendRequestSourceWeb If true, sends X-Request-Source: web on Bearer-authenticated requests only (not when using API Key)
+     * @param float $timeout Request timeout in seconds (also used as connect_timeout)
+     * @param Client|null $httpClient Optional Guzzle client (for tests / custom handlers)
      */
-    public function __construct($token = null, $apiKey = null, $baseUrl = 'https://api.pinarkive.com/api/v3', $sendRequestSourceWeb = false)
+    public function __construct($token = null, $apiKey = null, $baseUrl = 'https://api.pinarkive.com/api/v3', $sendRequestSourceWeb = false, float $timeout = 30.0, ?Client $httpClient = null)
     {
         $this->token = $token;
         $this->apiKey = $apiKey;
         $this->baseUrl = rtrim($baseUrl, '/');
         $this->sendRequestSourceWeb = $sendRequestSourceWeb;
-        $this->client = new Client();
+        $this->client = $httpClient ?? new Client([
+            'timeout' => $timeout,
+            'connect_timeout' => $timeout,
+        ]);
     }
 
     private function headers(bool $auth = true): array

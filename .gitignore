@@ -1,6 +1,6 @@
 # Composer
 /vendor/
-composer.lock
+.phpunit.cache/
 
 # IDE
 .vscode/
