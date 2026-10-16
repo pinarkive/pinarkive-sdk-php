@@ -1,0 +1,164 @@
+{
+  "communities": {
+    "0": [
+      "pinarkiveclient_pinarkiveclient",
+      "pinarkiveclient_pinarkiveclient_construct",
+      "pinarkiveclient_pinarkiveclient_getallocations",
+      "pinarkiveclient_pinarkiveclient_getme",
+      "pinarkiveclient_pinarkiveclient_getpeers",
+      "pinarkiveclient_pinarkiveclient_getplans",
+      "pinarkiveclient_pinarkiveclient_headers",
+      "pinarkiveclient_pinarkiveclient_listtokens",
+      "pinarkiveclient_pinarkiveclient_login",
+      "pinarkiveclient_pinarkiveclient_pincid",
+      "pinarkiveclient_pinarkiveclient_removefile",
+      "pinarkiveclient_pinarkiveclient_request",
+      "pinarkiveclient_pinarkiveclient_revoketoken",
+      "pinarkiveclient_pinarkiveclient_uploaddirectory",
+      "pinarkiveclient_pinarkiveclient_verify2falogin"
+    ],
+    "1": [
+      "composer_keywords",
+      "ref_api",
+      "ref_api_keys",
+      "ref_directory_dag",
+      "ref_file_management",
+      "ref_ipfs",
+      "ref_laravel",
+      "ref_php",
+      "ref_pinarkive",
+      "ref_pinning",
+      "ref_sdk",
+      "ref_symfony",
+      "ref_v3"
+    ],
+    "2": [
+      "exception",
+      "pinarkiveclient",
+      "pinarkiveclient_pinarkiveexception",
+      "pinarkiveclient_pinarkiveexception_construct",
+      "pinarkiveclient_pinarkiveexception_getapicode",
+      "pinarkiveclient_pinarkiveexception_getapierror",
+      "pinarkiveclient_pinarkiveexception_getapimessage",
+      "pinarkiveclient_pinarkiveexception_getbody",
+      "pinarkiveclient_pinarkiveexception_getrequired",
+      "pinarkiveclient_pinarkiveexception_getretryafter",
+      "pinarkiveclient_pinarkiveexception_getstatuscode"
+    ],
+    "3": [
+      "composer",
+      "composer_authors",
+      "composer_description",
+      "composer_homepage",
+      "composer_license",
+      "composer_minimum_stability",
+      "composer_name",
+      "composer_prefer_stable",
+      "composer_type",
+      "composer_version"
+    ],
+    "4": [
+      "pinarkiveclient_pinarkiveclient_generatetoken",
+      "pinarkiveclient_pinarkiveclient_getstatus",
+      "pinarkiveclient_pinarkiveclient_health",
+      "pinarkiveclient_pinarkiveclient_listuploads",
+      "pinarkiveclient_pinarkiveclient_uploaddirectorydag",
+      "pinarkiveclient_pinarkiveclient_uploadfile",
+      "responseinterface"
+    ],
+    "5": [
+      "composer_support",
+      "composer_support_docs",
+      "composer_support_issues",
+      "composer_support_source"
+    ],
+    "6": [
+      "composer_autoload",
+      "composer_autoload_psr_4",
+      "composer_psr_4_pinarkive"
+    ],
+    "7": [
+      "composer_autoload_dev",
+      "composer_autoload_dev_psr_4",
+      "composer_psr_4_pinarkive_tests"
+    ],
+    "8": [
+      "composer_require",
+      "composer_require_guzzlehttp_guzzle",
+      "composer_require_php"
+    ],
+    "9": [
+      "composer_require_dev",
+      "composer_require_dev_phpunit_phpunit"
+    ]
+  },
+  "cohesion": {
+    "0": 0.24761904761904763,
+    "1": 0.15384615384615385,
+    "2": 0.18181818181818182,
+    "3": 0.2,
+    "4": 0.2857142857142857,
+    "5": 0.5,
+    "6": 0.6666666666666666,
+    "7": 0.6666666666666666,
+    "8": 0.6666666666666666,
+    "9": 1.0
+  },
+  "gods": [
+    {
+      "id": "pinarkiveclient_pinarkiveclient",
+      "label": "PinarkiveClient",
+      "degree": 21
+    },
+    {
+      "id": "composer_keywords",
+      "label": "keywords",
+      "degree": 13
+    },
+    {
+      "id": "pinarkiveclient_pinarkiveexception",
+      "label": "PinarkiveException",
+      "degree": 10
+    },
+    {
+      "id": "composer_support",
+      "label": "support",
+      "degree": 4
+    },
+    {
+      "id": "composer_require",
+      "label": "require",
+      "degree": 3
+    },
+    {
+      "id": "composer_require_dev",
+      "label": "require-dev",
+      "degree": 2
+    },
+    {
+      "id": "composer_autoload",
+      "label": "autoload",
+      "degree": 2
+    },
+    {
+      "id": "composer_autoload_psr_4",
+      "label": "psr-4",
+      "degree": 2
+    },
+    {
+      "id": "composer_autoload_dev",
+      "label": "autoload-dev",
+      "degree": 2
+    },
+    {
+      "id": "composer_autoload_dev_psr_4",
+      "label": "psr-4",
+      "degree": 2
+    }
+  ],
+  "surprises": [],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}
